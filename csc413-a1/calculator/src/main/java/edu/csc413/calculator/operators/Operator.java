@@ -50,4 +50,84 @@ public abstract class Operator {
         }
         return null;
     }
+
+    public static class AddOperator extends Operator{
+
+        @Override
+        public int precedence() {
+            return 1;
+        }
+
+        @Override
+        public Operand execute(Operand lhs, Operand rhs) {
+            Operand op = new Operand(lhs.getValue() + rhs.getValue());
+            return op;
+        }
+
+    }
+
+    public static class DivideOperator extends Operator{
+
+        @Override
+        public int precedence() {
+            return 2;
+        }
+
+        @Override
+        public Operand execute(Operand lhs, Operand rhs) {
+            Operand op = new Operand(lhs.getValue() / rhs.getValue());
+            return op;
+        }
+
+    }
+
+    public static class MultiplyOperator extends Operator{
+
+        @Override
+        public int precedence() {
+            return 2;
+        }
+
+        @Override
+        public Operand execute(Operand lhs, Operand rhs) {
+            Operand op = new Operand(lhs.getValue() * rhs.getValue());
+            return op;
+        }
+
+    }
+
+    public static class SubtractOperator extends Operator{
+
+        @Override
+        public int precedence() {
+            return 1;
+        }
+
+        @Override
+        public Operand execute(Operand lhs, Operand rhs) {
+            Operand op = new Operand(lhs.getValue() - rhs.getValue());
+            return op;
+        }
+
+    }
+
+    public static class PowerOperator extends Operator{
+
+        @Override
+        public int precedence() {
+            return 3;
+        }
+
+        @Override
+        public Operand execute(Operand lhs, Operand rhs) {
+            Operand op = new Operand((int)Math.pow(lhs.getValue() , rhs.getValue()));
+            return op;
+        }
+
+    }
 }
+
+
+
+
+
