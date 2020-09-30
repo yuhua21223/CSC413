@@ -1,7 +1,8 @@
 package edu.csc413.calculator.evaluator;
 
 import edu.csc413.calculator.exceptions.InvalidExpressionException;
-
+import edu.csc413.calculator.operators.Operator;
+import java.util.Stack;
 import java.util.StringTokenizer;
 
 /** Class containing functionality for evaluating arithmetic expressions. */
@@ -73,19 +74,68 @@ public class Evaluator {
         StringTokenizer expressionTokenizer = new StringTokenizer(expression, DELIMITERS, true);
 
         // TODO: Set up data structures needed for operands and operators.
+        Stack<Operand> operandStack = new Stack<>();
+        Stack<Operator> operatorStack = new Stack<>();
+
+        // TODO: Set up data structures needed for operands and operators.
+        Stack<Integer> values = new Stack<>();
+        Stack<Character> ops = new Stack<>();
 
         while (expressionTokenizer.hasMoreTokens()) {
             // Filter out whitespace.
-            String expressionToken = expressionTokenizer.nextToken();
-            if (expressionToken.trim().isEmpty()) {
+            String tokenExpresion = expressionTokenizer.nextToken();
+            if (tokenExpresion.trim().isEmpty()) {
                 continue;
             }
-
-            // Check if the token is an operand, operator, or parentheses.
-            if (Operand.isValid(expressionToken)) {
+            if (Operand.isValid(tokenExpresion)) {
                 // TODO: Implement this.
+                Operand operandToken = new Operand(tokenExpresion);
+                operandStack.push(operandToken);
             } else {
-                // TODO: Implement this.
+
+                Operator operatorToken = Operator.create(tokenExpresion);
+                if (Operator.create(tokenExpresion) == null) {
+                    System.out.println("Invalid Expression: " + tokenExpresion);
+                    throw new InvalidExpressionException("Invalid Expression");
+                }else {
+                    if (!operatorStack.empty() && (operatorStack.peek().precedence() >= operatorToken.precedence())) {
+                        Operator Top = operatorStack.pop();
+                        Operand TopA = operandStack.pop();
+                        Operand TopB = operandStack.pop();
+
+                        operandStack.push(Top.execute(TopA, TopB));
+                    }else if (tokenExpresion.charAt(0) == '+' || tokenExpresion.charAt(0) == '-'
+                            || tokenExpresion.charAt(0) == '*' || tokenExpresion.charAt(0) == '/') {
+                        // While top of 'ops' has same or greater precedence to current
+                        // token, which is an operator. Apply operator on top of 'ops'
+                        // to top two elements in values stack
+                        while (!ops.empty() && hasPrecedence(tokenExpresion.charAt(0), ops.peek())) {
+                            if(ops.peek() == '+'){
+                                values.push(new Operator.AddOperator().execute(new Operand(values.pop()), new Operand(values.pop())).getValue());
+                            }
+                            else if(ops.peek() == '-'){
+                                values.push(new Operator.SubtractOperator().execute(new Operand(values.pop()), new Operand(values.pop())).getValue());
+                            }
+                            else if(ops.peek() == '*'){
+                                values.push(new Operator.MultiplyOperator().execute(new Operand(values.pop()), new Operand(values.pop())).getValue());
+                            }
+                            else if(ops.peek() == '/'){
+                                values.push(new Operator.DivideOperator().execute(new Operand(values.pop()), new Operand(values.pop())).getValue());
+                            }
+                            else if(ops.peek() == '^'){
+                                values.push(new Operator.PowerOperator().execute(new Operand(values.pop()), new Operand(values.pop())).getValue());
+                            }
+                        }
+                        // Push current token to 'ops'.
+                        ops.push(tokenExpresion.charAt(0));
+                    }
+
+                }
+
+                operatorStack.push(operatorToken);
+
+
+
             }
         }
 
@@ -93,6 +143,29 @@ public class Evaluator {
         // algorithm has been implemented correctly, we should expect to have some number of (partially processed)
         // operands and operators in their corresponding stacks.
         // TODO: Implement this.
-        return 0;
+        while (!operatorStack.empty()) {   //This portion the same
+            Operator Top = operatorStack.pop();
+
+            Operand TopA = operandStack.pop();
+            Operand TopB = operandStack.pop();
+
+            Operand Answer = Top.execute(TopA, TopB);
+
+            operandStack.push(Answer);
+
+        }
+
+        return operandStack.pop().getValue(); // difference here,
+    }
+
+    public static boolean hasPrecedence(char op1, char op2) {
+        if (op2 == '(' || op2 == ')') {
+            return false;
+        }
+        if ((op1 == '*' || op1 == '/') && (op2 == '+' || op2 == '-')) {
+            return false;
+        } else {
+            return true;
+        }
     }
 }
